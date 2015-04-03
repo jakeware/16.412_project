@@ -8,36 +8,21 @@ clc
 %% Setup
 n = 4;  % number of states
 gamma = 0.9;  % dicount factor
+epsilon = .01; % convergence treshold
+goal_state = [4 4];
 
-check = 0;
-
-% latent initial state
-s0 = [1,1];
-
-% initial belief
-b0 = zeros(n);
-b0(s0(1),s0(2)) = 1;
-
-% States
-% S \in {x,y}
-% (1,n),...,(n,n);
-% ...,...,...;
-% (1,1),...,(n,1);
-
-%% Check
-if check
-    for i=1:n
-        for j=1:n
-            r_out(i,j) = Reward([i,j],0);
-        end
-    end
-end
+V = rand(n);
+V(goal_state(1),goal_state(2)) = 1;
+[X,Y] = meshgrid(1:n,1:n);
 
 %% Analysis
-
-
-%% Plot
-figure
-imagesc(r_out)
-xlabel('x')
-ylabel('y')
+while max(max(V_diff))>epsilon
+  for k=1:numel(X)
+    i = X(k);
+    j = Y(k);
+    if (i==goal_state(1) && j==goal_state(2))
+      continue;
+    end
+    V(i,j) = + V(goal_state(1),goal_state(2));
+  end
+end
