@@ -11,35 +11,38 @@
 % action.  Here, m is the number of viable actions.
 
 function a = Actions(s,n)
+    x = s(1);
+    y = s(2);
+
     % field
-    if (s(1) > 1 && s(1) <n && s(2) > 1 && s(2) < n)
+    if (x > 1 && x <n && y > 1 && y < n)
         a = [1,0;0,1;-1,0;0,-1];
     % lower left
-    elseif (s(1) == 1 && s(2) == 1)
+    elseif (x == 1 && y == 1)
         a = [1,0;0,1];
     % upper left
-    elseif (s(1) == 1 && s(2) == n)
-        a = [-1,0;0,-1];
-    % lower right
-    elseif (s(1) == n && s(2) == 1)
+    elseif (x == 1 && y == n)
         a = [1,0;0,-1];
+    % lower right
+    elseif (x == n && y == 1)
+        a = [-1,0;0,1];
     % upper right
-    elseif (s(1) == n && s(2) == n)
+    elseif (x == n && y == n)
         a = [-1,0;0,-1];
     % left edge
-    elseif (s(1) == 1 && s(2) > 1 && s(2) < n)
+    elseif (x == 1 && y > 1 && y < n)
         a = [1,0;0,1;0,-1];
     % right edge
-    elseif (s(1) == n && s(2) > q && s(2) < n)
+    elseif (x == n && y > 1 && y < n)
         a = [0,1;-1,0;0,-1];
     % lower edge
-    elseif (s(2) == 1 && s(1) > 1 && s(1) < n)
+    elseif (y == 1 && x > 1 && x < n)
         a = [1,0;0,1;-1,0];
     % upper edge
-    elseif (s(2) == n && s(1) > 1 && s(1) < n)
+    elseif (y == n && x > 1 && x < n)
         a = [1,0;-1,0;0,-1];
     % else
     else
-        fprintf('Unrecognized Action {%i,%i,%i}',s(1),s(2),n);
+        fprintf('Unrecognized Action {%i,%i,%i}',x,y,n);
     end
 end

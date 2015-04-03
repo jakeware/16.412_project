@@ -9,17 +9,20 @@
 %% Outputs
 % r: reward is a real number.
 
-function r = Reward(s,a)
+function r = Reward(s)
     % Rewards
     % 1: free
     % 5: ice
     % 50: hole
 
     R = [
-        1,1,1,1;
-        1,5,1,5;
-        1,50,5,5;
-        1,1,1,1];
+        -1,-1,-1,50;
+        -1,-5,-1,-5;
+        -1,-50,-5,-5;
+        -1,-1,-1,-1];
+    
+    R = -1*ones(10);
+    R(1,10) = 50;
     
     r = R(s(1),s(2));
 end
