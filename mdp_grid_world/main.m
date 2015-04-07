@@ -22,35 +22,41 @@ while max(max(V_diff))>epsilon
   V_new = zeros(size(V));  % new v for this iteration
   
   % for each state
-  for k=1:n^2
+  for k=1:numel(V)
     % subscript for this state
-    i_x = X(k);
-    i_y = Y(k);
+    x_k = X(k);
+    y_k = Y(k);
     
     % convert subscript to index
-    i_xy = sub2ind(size(V),i_x,i_y);
+    i_v = sub2ind(size(V),x_k,y_k);
     
     % get a list of actions it can do in state (i,j)
-    actions = Actions([i_x,i_y],n);
+    actions = Actions([x_k,y_k],n);
+    
+    %pause;
     
     % iterate over each possible action in this state
     new_val = zeros(1,size(actions,1));
-    for i_act=1:size(actions,1)
+    for i_act=1:size(actions,1);
       act = actions(i_act,:);
-      trans = Transition([i_x,i_y],act,n);
+      trans = Transition([x_k,y_k],act,n);
       
-      % sum transition probabilities times current values
+      % sum transition probabilities times current values and discount rate
       new_val(i_act) = gamma*trans(:,3)'*V(sub2ind(size(V),trans(:,1),trans(:,2)));
+      
+      %pause;
     end
     
     % get max value and its index
     [max_val,i_max] = max(new_val);
     
     % update value and record action taken
-    XY(i_x,i_y,1:2) = [i_x,i_y]; 
-    A(i_x,i_y,1:2) = actions(i_max,:);
-    V_new(i_xy) = max_val + Reward([i_x,i_y]);
+    XY(x_k,y_k,1:2) = [x_k,y_k];
+    A(x_k,y_k,1:2) = actions(i_max,:);
+    V_new(i_v) = max_val + Reward([x_k,y_k]);
   end
+  
+  %pause;
   
   V_diff = abs(V_new-V);
   V = V_new;
@@ -60,6 +66,7 @@ end
 %% Plot
 figure
 hold on
+colormap('gray')
 imagesc(flipud(V));
-quiver(XY(:,:,1),XY(:,:,2),A(:,:,1),A(:,:,2),0.5,'k')
+quiver(XY(:,:,1) - 0.25*A(:,:,1),XY(:,:,2) - 0.25*A(:,:,2),A(:,:,1),A(:,:,2),0.5,'r','LineWidth',2)
 hold off
