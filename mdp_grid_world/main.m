@@ -2,6 +2,7 @@ clear all
 close all
 clc
 
-prob = mdpProblem(4,@Reward);
+n = 25;
+prob = mdpProblem(n,@(s)Reward(n,s));
 sol = prob.solve();
 prob.plot(sol);

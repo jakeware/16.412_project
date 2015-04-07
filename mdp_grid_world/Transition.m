@@ -17,6 +17,11 @@ function t = Transition(s,a,n)
     % 10% stay still
     % 10% overshoot
     
+    if norm(a) == 0
+        t = [s,1];
+        return;
+    end
+    
     % new state (stay,intended action,overshoot)
     s_p = repmat(s,3,1) + [zeros(1,2);a;2*a];
     

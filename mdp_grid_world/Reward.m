@@ -9,22 +9,18 @@
 %% Outputs
 % r: reward is a real number.
 
-function r = Reward(s)
-    % Rewards
-    % 1: free
-    % 5: ice
-    % 50: hole
-
+function r = Reward(n,s)
     % hardcoded
-    R = [
-        -1,-1,-1,1000;
-        -100,-100,-1,-1;
-        -1,-1,-1,-1;
-        -1,-100,-1,-1];
-    
-    % uniform
-    %R = -1*ones(10);
-    %R(1,10) = 50;
+%     R = [
+%         1,1,1,1;
+%         1,5,10,20;
+%         1,5,100,20;
+%         1,5,10,1];
+
+    R = ones(n);
+    R(:,1) = 5*R(:,1);
+    %R(2,:) = 10*R(:,n);
+    R(end,end) = 50;
     
     r = R(s(1),s(2));
 end

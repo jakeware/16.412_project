@@ -1,7 +1,7 @@
 classdef mdpProblem
   properties
     gamma = 0.9;  % dicount factor
-    epsilon = .01; % convergence treshold
+    epsilon = .001; % convergence treshold
 
     grid_size;
     reward_function;
@@ -28,12 +28,12 @@ classdef mdpProblem
           for j=1:obj.grid_size
             % get a list of actions it can do in state (i,j)
             actions = Actions([i,j],obj.grid_size);
-            
+
             % iterate over each possible action in this state
             new_val = zeros(1,size(actions,1));
             for i_act=1:size(actions,1);
               act = actions(i_act,:);
-              trans = Transition([i,j],act,obj.grid_size);      
+              trans = Transition([i,j],act,obj.grid_size);    
               % sum transition probabilities times current values and discount rate
               new_val(i_act) = obj.gamma*trans(:,3)'*V(sub2ind(size(V),trans(:,1),trans(:,2)));
             end
@@ -41,7 +41,7 @@ classdef mdpProblem
             [max_val,i_max] = max(new_val);
             % update value and record action taken
             A(i,j,1:2) = actions(i_max,:);
-            V_new(i,j) = max_val + Reward([i,j]);
+            V_new(i,j) = max_val + obj.reward_function([i,j]);
           end
         end
       
@@ -57,10 +57,10 @@ classdef mdpProblem
       %% Plot
       figure
       hold on
-      colormap('gray')
-      imagesc(sol.Values);
+      colormap('jet')
+      imagesc(sol.Values)
       [X,Y] = meshgrid(1:obj.grid_size,1:obj.grid_size);  % possible coordinates
-      quiver(X - 0.25*sol.Actions(:,:,1),Y - 0.25*sol.Actions(:,:,2),sol.Actions(:,:,1),sol.Actions(:,:,2),0.5,'r','LineWidth',2)
+      quiver(X - 0.25*sol.Actions(:,:,2),Y - 0.25*sol.Actions(:,:,1),sol.Actions(:,:,2),sol.Actions(:,:,1),0.5,'r','LineWidth',2)
       hold off      
     end
   end
