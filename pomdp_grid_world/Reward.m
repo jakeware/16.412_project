@@ -1,14 +1,26 @@
-function reward = Reward(state,actions)
-    % Rewards
-    % 1: free
-    % 5: ice
-    % 50: hole
+%% Summary
+% This function takes the current state and selected action and returns the
+% reward for that state, action pair.
 
-    R = [
-        1,1,1,1;
-        1,5,1,5;
-        1,50,5,5;
-        1,1,1,1];
+%% Inputs
+% s: state is a 1x2 tuple of reals.
+% a: actions is a 1x2 tuple of reals.
+
+%% Outputs
+% r: reward is a real number.
+
+function r = Reward(n,s)
+    % hardcoded
+%     R = [
+%         1,1,1,1;
+%         1,5,10,20;
+%         1,5,100,20;
+%         1,5,10,1];
+
+    R = ones(n);
+    R(:,1) = 5*R(:,1);
+    %R(2,:) = 10*R(:,n);
+    R(end,end) = 50;
     
-    reward = R(state(1),state(2));
+    r = R(s(1),s(2));
 end
