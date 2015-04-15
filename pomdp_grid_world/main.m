@@ -69,9 +69,6 @@ clc
 %   end
 % end
 
-
-
-%% Execution
 % A up, right, down, left
 n = 2;
 m = 4;
@@ -95,11 +92,12 @@ T(4,:,:) = [0,0,1,0;
             0,0,0,1;
             0,0,0,1;
             0,1,0,0]; 
-  
+ 
 Z = eye(n^2);
 R = ones(n);
-R(2,2) = 5*R(2,2);
+R(2,2) = 5*R(1,1);
 R = reshape(R,n^2,1);
 
+%% Execution
 prob = pomdpProblem(n^2,H,T,Z,R,m);
 sol = prob.solve();

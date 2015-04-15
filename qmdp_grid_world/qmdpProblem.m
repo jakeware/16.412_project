@@ -1,7 +1,7 @@
 classdef qmdpProblem
   properties
-    gamma = .9;  % dicount factor
-    m;
+    gamma = 0.9;  % dicount factor
+    m;  % number of actions
     H;  % horizon
     N;  % state size
     T;  % transition probs (N x m x N)
@@ -37,6 +37,9 @@ classdef qmdpProblem
       % TODO: sol.A = A;
     end
     
+    function [actioni,value] = evalsol(obj,sol,b)
+      [value,actioni] = max(sol.Q'*b);
+    end
   end
   
 end
