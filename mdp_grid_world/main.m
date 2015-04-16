@@ -3,9 +3,10 @@ close all
 clc
 
 %% Setup
+n = 20;
+inp = setupProblem(n);
 
 %% Exectuion
-n = 25;
-prob = mdpProblem(n,@(s)Reward(n,s));
+prob = mdpProblem(n^2,inp.T,inp.R,inp.A);
 sol = prob.solve();
-prob.plot(sol);
+prob.plot_sol(sol);

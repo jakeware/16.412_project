@@ -2,65 +2,73 @@ classdef mdpProblem
   properties
     gamma = 0.9;  % dicount factor
     epsilon = .001; % convergence treshold
-
-    grid_size;
-    reward_function;
+    n;  % edge size
+    N;  % state size
+    T;  % transition probs (N x m x N)
+    R;  % reward values (N)
+    A;  % action definitions
+    m;  % number of actions
   end
   
   methods
-    function obj = mdpProblem(grid_size, reward_function)
-      obj.grid_size = grid_size;
-      obj.reward_function = reward_function;
+    function obj = mdpProblem(N,T,R,A)
+      obj.n = sqrt(N);
+      obj.N = N;
+      obj.T = T;
+      obj.R = R;
+      obj.A = A;
+      obj.m = size(A,1);
     end
     
     function sol = solve(obj)
-      V = rand(obj.grid_size);
-      V_diff = Inf*ones(size(V));  % nxn array.  difference between values from each iteration.
-      A = zeros([size(V),2]);  % array of selected actions
+      % initialize value function
+      Vsol = rand(obj.N,1);
+      V_diff = Inf*ones(obj.N,1);  % nxn array.  difference between values from each iteration.
+      Asol = zeros(obj.N,1);  % stored action indices
 
       %% Analysis
       % loop until V stops changing
       while max(max(V_diff))>obj.epsilon
-        V_new = zeros(size(V));  % new v for this iteration
+        V_new = zeros(size(Vsol));  % new v for this iteration
   
-        % for each state
-        for i=1:obj.grid_size
-          for j=1:obj.grid_size
-            % get a list of actions it can do in state (i,j)
-            actions = Actions([i,j],obj.grid_size);
-
-            % iterate over each possible action in this state
-            new_val = zeros(1,size(actions,1));
-            for i_act=1:size(actions,1);
-              act = actions(i_act,:);
-              trans = Transition([i,j],act,obj.grid_size);    
-              % sum transition probabilities times current values and discount rate
-              new_val(i_act) = obj.gamma*trans(:,3)'*V(sub2ind(size(V),trans(:,1),trans(:,2)));
-            end
-            % get max value and its index
-            [max_val,i_max] = max(new_val);
-            % update value and record action taken
-            A(i,j,1:2) = actions(i_max,:);
-            V_new(i,j) = max_val + obj.reward_function([i,j]);
+        % loop over states
+        for k=1:obj.N  
+          % loop over actions
+          new_val = zeros(1,size(obj.m,1));
+          for action=1:obj.m
+            new_val(action) = dot(squeeze(obj.T(k,action,:)),squeeze(obj.R(k,action,:))) + obj.gamma*dot(squeeze(obj.T(k,action,:)),Vsol);
           end
+          
+          % get max value and its index
+          [max_val,i_max] = max(new_val);
+          % update value and record action taken
+          Asol(k) = i_max;
+          V_new(k) = max_val;
         end
       
-        V_diff = abs(V_new-V);
-        V = V_new;
+        V_diff = abs(V_new-Vsol);
+        Vsol = V_new;
       end
       
-      sol.Values = V;
-      sol.Actions = A;
+      % store results
+      sol.V = Vsol;
+      sol.A = Asol;
+      
+      % map actions
+      sol.Amap = zeros(obj.n,obj.n,2);
+      for k=1:obj.N
+        [i,j] = ind2sub([obj.n,obj.n],k);
+        sol.Amap(i,j,1:2) = obj.A(Asol(k),:);
+      end
     end
     
-    function plot(obj, sol)
-      %% Plot
+    function plot_sol(obj, sol)
       figure
       hold on
       colormap('jet')
-      imagesc(sol.Values)
-      [X,Y] = meshgrid(1:obj.grid_size,1:obj.grid_size);  % possible coordinates
-      quiver(X - 0.25*sol.Actions(:,:,2),Y - 0.25*sol.Actions(:,:,1),sol.Actions(:,:,2),sol.Actions(:,:,1),0.5,'r','LineWidth',2)
+      imagesc(reshape(sol.V,obj.n,obj.n))
+      [X,Y] = meshgrid(1:obj.n,1:obj.n);  % possible coordinates
+      quiver(X - 0.25*sol.Amap(:,:,2),Y - 0.25*sol.Amap(:,:,1),sol.Amap(:,:,2),sol.Amap(:,:,1),0.5,'r','LineWidth',2)
       hold off      
     end
   end
