@@ -33,29 +33,21 @@ classdef mdpProblem
   
         % loop over states
         for k=1:obj.N  
-          %k
-            
           % loop over actions
           new_val = zeros(1,size(obj.m,1));
           for action=1:obj.m
-            new_val(action) = obj.gamma*dot(squeeze(obj.T(k,action,:)),Vsol);
+            new_val(action) = dot(squeeze(obj.T(k,action,:)),squeeze(obj.R(k,action,:))) + obj.gamma*dot(squeeze(obj.T(k,action,:)),Vsol);
           end
-          
-          %new_val
           
           % get max value and its index
           [max_val,i_max] = max(new_val);
           % update value and record action taken
           Asol(k) = i_max;
-          V_new(k) = obj.R(k) + max_val;
-          
-          %pause
+          V_new(k) = max_val;
         end
       
         V_diff = abs(V_new-Vsol);
         Vsol = V_new;
-        
-        %pause
       end
       
       % store results
@@ -68,14 +60,6 @@ classdef mdpProblem
         [i,j] = ind2sub([obj.n,obj.n],k);
         sol.Amap(i,j,1:2) = obj.A(Asol(k),:);
       end
-    end
-    
-    function plot_reward(obj)
-      figure
-      hold on
-      colormap('jet')
-      imagesc(reshape(obj.R,obj.n,obj.n))
-      hold off  
     end
     
     function plot_sol(obj, sol)
