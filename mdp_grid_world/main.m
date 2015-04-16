@@ -41,7 +41,8 @@ T(4,:,:) = [0,0,1,0;
 
 % Rewards
 R = ones(n);
-R(2,2) = 5*R(2,2);
+R(2,2) = 5;
+R(2,1) = 2;
 R = reshape(R,n^2,1);
 
 %% Exectuion

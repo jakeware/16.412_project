@@ -17,7 +17,7 @@ classdef mdpProblem
       obj.T = T;
       obj.R = R;
       obj.A = A;
-      obj.m = size(A,2);
+      obj.m = size(A,1);
     end
     
     function sol = solve(obj)
@@ -33,21 +33,29 @@ classdef mdpProblem
   
         % loop over states
         for k=1:obj.N  
+          %k
+            
           % loop over actions
           new_val = zeros(1,size(obj.m,1));
           for action=1:obj.m
             new_val(action) = obj.gamma*dot(squeeze(obj.T(k,action,:)),Vsol);
           end
           
+          %new_val
+          
           % get max value and its index
           [max_val,i_max] = max(new_val);
           % update value and record action taken
           Asol(k) = i_max;
           V_new(k) = obj.R(k) + max_val;
+          
+          %pause
         end
       
         V_diff = abs(V_new-Vsol);
         Vsol = V_new;
+        
+        %pause
       end
       
       % store results
