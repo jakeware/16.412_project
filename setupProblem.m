@@ -129,8 +129,8 @@ function sol = setupProblem(n)
 %   R(:,:,16) = -100*R(:,:,16);
 
   % Observations(s',o')
-  Z = eye(n^2);
-  %Z(n,:) = ones(1,n^2)/n^2;
+  Z = diag(ones(n^2,1)) + ones(n^2);
+  Z = normr(Z);
 
   sol.A = A;
   sol.T = T;
