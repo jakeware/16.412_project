@@ -10,10 +10,12 @@ classdef pomdpProblem
     R;  % reward values (N)
     A;  % action set
     B;  % belief set if using PBVI
+    sol;  % solver type (1=full,2=larks,3=pbvi)
+    ns;  % number of belief samples for PBVI
   end
   
   methods
-    function obj = pomdpProblem(n,H,T,Z,R,A,b0)
+    function obj = pomdpProblem(n,H,T,Z,R,A,varargin)
       % if b0 is provided, will use point-based value iteration
       obj.n = n;
       obj.N = n^2;
@@ -23,11 +25,34 @@ classdef pomdpProblem
       obj.R = R;
       obj.m = size(A,1);
       obj.A = A;
-      if (nargin>6)
-        obj.B = beliefPointSetExpension(b0,T,n^2);
-        %obj.B = eye(n^2);
-      else
-        obj.B = [];
+      obj.B = [];
+      obj.sol = 1;
+      obj.ns = 0;
+      
+      vin=varargin;
+      for i=1:length(vin)
+        if isequal(vin{i},'solver')
+          sol_str = vin{i+1};
+          
+          % check for solver type
+          if strcmp(sol_str,'full')
+            display('Solver is Using Full Exact Solution')
+            obj.sol = 1;
+          elseif strcmp(sol_str,'larks')
+            display('Solver is Using Larks Algorithm')
+            obj.sol = 2;
+          elseif strcmp(sol_str,'pbvi')
+            display('Solver is using PBVI')
+            obj.sol = 3;
+            
+            b0 = vin{i+2};  % get belief
+            obj.ns = vin{i+3};  % get belief sample number
+            fprintf('Belief Samples: %d\n',obj.ns)
+            obj.B = beliefPointSetExpension(b0,T,obj.ns);
+            
+            %obj.B = eye(obj.N);
+          end
+        end
       end
     end
     
@@ -48,7 +73,7 @@ classdef pomdpProblem
         Aprime = A;
         A = [];
         
-        if size(obj.B,2)>0
+        if obj.sol == 3
           G_pbvi = zeros(obj.N,obj.m,size(obj.B,2));
         end
         
@@ -77,7 +102,7 @@ classdef pomdpProblem
             G_a(:,:,1+obs) = G_a_o;
           end
                     
-          if size(obj.B,2)>0
+          if obj.sol == 3
             % using PBVI
             for bi=1:size(obj.B,2)
               alphasumoverobs = size(obj.N,1);
@@ -98,17 +123,21 @@ classdef pomdpProblem
           end
         end
         
-        if size(obj.B,2)>0
+        if obj.sol == 3
           % using PBVI
           for bi=1:size(obj.B,2)
             [~,maxact] = max(G_pbvi(:,:,bi)'*obj.B(:,bi));
             V = [V,G_pbvi(:,maxact,bi)];
             A = [A,maxact];
           end
-        else
+        elseif obj.sol == 2
           % pruning of the alpha vectors (lark's filter)
           % requires MOSEK
           [V,A] = larkfilt(V,A);
+        elseif obj.sol == 1
+          % full solution
+        else
+          % nothing specified, no pruning
         end
       end
 

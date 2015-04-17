@@ -11,7 +11,7 @@
 % t: mx3 tuple of reals, where the first 2 columns are the state and the
 % 3rd column is the probability of being in that state.
 
-function t = Transition(s,a,n)
+function t = transition(s,a,n)
     % Transition Probabilities
     % 80% intended action
     % 10% stay still
