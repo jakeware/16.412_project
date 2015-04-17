@@ -14,8 +14,7 @@ function bargmax = dominate(p,G)
   end
   
   % remove p from G if there
-  G(ismember(G,p)) = [];
-  G = reshape(G,n,[]);
+  G = G(:,~all(ismember(G,p),1));
   m = size(G,2);
   
   % max d

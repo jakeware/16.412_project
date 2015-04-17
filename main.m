@@ -3,13 +3,15 @@ close all
 clc
 
 %% Setup
-n = 10;  % grid size
-H = 20;  % horizon
+n = 2;  % grid size
+H = 5;  % horizon
 
-solve_mdp = 1;
+solve_mdp = 0;  % MDP
+solve_qmdp = 1;  % QMDP
+solve_pomdp = 0;  % POMDP
+
+% initial conditions
 s0 = [1,1];
-
-solve_qmdp = 0;
 b0_mat = zeros(n);
 b0_mat(1,1) = 1;
 b0 = reshape(b0_mat,[n^2,1]);
@@ -33,7 +35,12 @@ if solve_mdp || solve_qmdp
     qmdp_prob = qmdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,mdp_sol.V);
     qmdp_sol = qmdp_prob.solve();
     path = qmdp_prob.simulate(qmdp_sol,b0);
-    qmdp_prob.plot_sol(qmdp_sol, path);
+    qmdp_prob.plot_sol(path);
   end
 end
 
+% solve pomdp
+if solve_pomdp
+  pomdp_prob = pomdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A);
+  pomdp_sol = pomdp_prob.solve();
+end
