@@ -9,10 +9,12 @@ classdef pomdpProblem
     Z;  % observation probs (N x m x N)
     R;  % reward values (N)
     A;  % action set
+    B;  % belief set if using PBVI
   end
   
   methods
-    function obj = pomdpProblem(n,H,T,Z,R,A)
+    function obj = pomdpProblem(n,H,T,Z,R,A,b0)
+      % if b0 is provided, will use point-based value iteration
       obj.n = n;
       obj.N = n^2;
       obj.H = H;
@@ -21,6 +23,12 @@ classdef pomdpProblem
       obj.R = R;
       obj.m = size(A,1);
       obj.A = A;
+      if (nargin>6)
+        obj.B = beliefPointSetExpension(b0,T,n^2);
+        %obj.B = eye(n^2);
+      else
+        obj.B = [];
+      end
     end
     
     function sol = solve(obj)
@@ -39,6 +47,10 @@ classdef pomdpProblem
         V = [];
         Aprime = A;
         A = [];
+        
+        if size(obj.B,2)>0
+          G_pbvi = zeros(obj.N,obj.m,size(obj.B,2));
+        end
         
         % loop over actions
         for action=1:obj.m
@@ -61,20 +73,43 @@ classdef pomdpProblem
               end
               G_a_o = [G_a_o,new_alpha];
             end
-            
-            G_a(:,:,1+obs) = G_a_o;  
+          
+            G_a(:,:,1+obs) = G_a_o;
           end
-          
-          G_a = sum(G_a,3); % alpha vectors to be added to our tree
-          V = [V,G_a]; % union of the alpha vectors set
-          
-          G_a_actions = [repmat(action,1,size(Aprime,2));Aprime];
-          A = [A,G_a_actions];
+                    
+          if size(obj.B,2)>0
+            % using PBVI
+            for bi=1:size(obj.B,2)
+              alphasumoverobs = size(obj.N,1);
+              for oi=1:obj.N
+                G_a_o = squeeze(G_a(:,:,oi));
+                [~,maxalphabi] = max(G_a_o'*obj.B(:,bi));
+                maxalpha = G_a_o(:,maxalphabi);
+                alphasumoverobs = alphasumoverobs + maxalpha;
+              end
+              G_a_b = sum(squeeze(obj.R(:,action,:)),2) + alphasumoverobs;
+              G_pbvi(:,action,bi) = G_a_b;
+            end
+          else
+            G_a = sum(G_a,3); % standard cross-sum 
+            V = [V,G_a]; % union of the alpha vectors set
+            G_a_actions = [repmat(action,1,size(Aprime,2));Aprime];
+            A = [A,G_a_actions];
+          end
         end
         
-        % optional pruning of the alpha vectors (lark's filter)
-        [V,A] = larkfilt(V,A);
-     
+        if size(obj.B,2)>0
+          % using PBVI
+          for bi=1:size(obj.B,2)
+            [~,maxact] = max(G_pbvi(:,:,bi)'*obj.B(:,bi));
+            V = [V,G_pbvi(:,maxact,bi)];
+            A = [A,maxact];
+          end
+        else
+          % pruning of the alpha vectors (lark's filter)
+          % requires MOSEK
+          [V,A] = larkfilt(V,A);
+        end
       end
 
       sol.V = V;

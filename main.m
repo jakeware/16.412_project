@@ -9,7 +9,8 @@ sim_time = 12;
 
 solve_mdp = 0;  % MDP
 solve_qmdp = 0;  % QMDP
-solve_pomdp = 1;  % POMDP
+solve_pomdp = 0;  % POMDP
+solve_pomdp_pbvi = 1; % PMDP with PBVI
 
 % initial conditions
 s0 = [1,1];
@@ -43,6 +44,14 @@ end
 % solve pomdp
 if solve_pomdp
   pomdp_prob = pomdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A);
+  pomdp_sol = pomdp_prob.solve();
+  path = pomdp_prob.simulate(pomdp_sol,b0,sim_time);
+  pomdp_prob.plot_sol(path);
+end
+
+% solve pomdp with PBVI
+if solve_pomdp_pbvi
+  pomdp_prob = pomdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,b0);
   pomdp_sol = pomdp_prob.solve();
   path = pomdp_prob.simulate(pomdp_sol,b0,sim_time);
   pomdp_prob.plot_sol(path);
