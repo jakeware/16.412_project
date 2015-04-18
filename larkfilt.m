@@ -12,7 +12,7 @@ function [U,K] = larkfilt(G,A)
     pi = randi([1 size(unchecked,2)]);
     p = unchecked(:,pi);
     x = dominate(p,U);
-    if (~x)
+    if (x==-1)
       unchecked(:,pi) = [];
       uncheckedi(:,pi) = [];
     else

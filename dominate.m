@@ -2,7 +2,7 @@ function bargmax = dominate(p,G)
   % uses an LP to test for dominance
 
   % p is the vector you are checking for dominance against G
-  % dom is whether the vector dominates at any point in the belief space
+  % bargmax is whether the vector dominates at any point in the belief space
   
   % decision variables b (belief state) and d (difference in value)
   % [s1 s2 s3 ... d]
@@ -50,7 +50,7 @@ function bargmax = dominate(p,G)
   if (d>0)
     bargmax = x(1:n);
   else
-    bargmax = false;
+    bargmax = -1;
   end
   
 end
