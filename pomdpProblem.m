@@ -189,7 +189,7 @@ classdef pomdpProblem
       end
     end
     
-    function plot_sol(obj,path)
+    function plot_sol(obj,path,t)
 %       figure
 %       hold on
 %       colormap('jet')
@@ -206,15 +206,13 @@ classdef pomdpProblem
 %       ylabel('Y')
 %       hold off
       
-      figure
       % plot belief state over time
-      for i=1:size(path.b,2)
+      figure
+      m = ceil(sqrt(size(path.b,2)));
+      for i=1:t
+        subplot(m,m,i)
         imagesc(reshape(path.b(:,i),obj.n,obj.n));
-        F(i) = getframe;
       end
-
-      movie(F,3,1)
     end
   end
-  
 end

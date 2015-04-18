@@ -40,7 +40,7 @@ classdef qmdpProblem
       sol.Q = Q;
     end
     
-    function path = simulate(obj,sol,b0)
+    function path = simulate(obj,sol,b0,ns)
       path.b = zeros(obj.N,obj.H+1);
       path.p = zeros(obj.H+1,1);
       path.Amap = zeros(obj.n,obj.n,2);
@@ -53,7 +53,7 @@ classdef qmdpProblem
       path.p(1) = p_s;
       i_a = zeros(obj.H,1);
       
-      for k=1:obj.H
+      for k=1:ns
         % get action
         [vi,ai] = max(sol.Q'*path.b(:,k));
         i_a(k) = ai;
@@ -84,7 +84,7 @@ classdef qmdpProblem
       end
     end
 
-    function plot_sol(obj,path)
+    function plot_sol(obj,path,ns)
 %       figure
 %       hold on
 %       colormap('jet')
@@ -101,14 +101,23 @@ classdef qmdpProblem
 %       ylabel('Y')
 %       hold off
 
-      figure
-      % plot belief state over time
-      for i=1:obj.H
-        imagesc(reshape(path.b(:,i),obj.n,obj.n));
-        F(i) = getframe;
-      end
+      obstacle = [
+          0,0,0,0,0,0;
+          0,0,0,0,0,0;
+          1,1,1,1,0,0;
+          1,1,1,1,0,0;
+          1,1,1,1,0,0;
+          1,1,1,1,0,0];
+      
+      [X,Y] = meshgrid(1:obj.n,1:obj.n);  % possible coordinates
 
-      movie(F,3,1)
+      % plot belief state over time
+      figure
+      m = ceil(sqrt(size(path.b,2)));
+      for i=1:ns
+        subplot(m,m,i)
+        imagesc(reshape(path.b(:,i),obj.n,obj.n));
+      end
     end
   end
   

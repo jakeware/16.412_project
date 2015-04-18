@@ -3,12 +3,12 @@ close all
 clc
 
 %% Setup
-mdp = 1;
+mdp = 0;
 qmdp = 0;
-pomdp = 0;
+pomdp = 1;
 
-n = 6;
-H = 10;  % solver horizon
+n = 4;
+H = 8;  % solver horizon
 sim_time = 12;  % simulation steps
 
 % get actions and compute reward, transition, and observation functions
@@ -38,14 +38,15 @@ if mdp || qmdp
     if qmdp
         qmdp_prob = qmdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,mdp_sol.V);
         qmdp_sol = qmdp_prob.solve();
-        path = qmdp_prob.simulate(qmdp_sol,b0_sim);
-        qmdp_prob.plot_sol(path);
+        path = qmdp_prob.simulate(qmdp_sol,b0_sim,sim_time);
+        qmdp_prob.plot_sol(path,sim_time);
     end
 end
 
-% 
-% % pomdp larks
-% pomdp_prob = pomdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,'solver','larks');
-% pomdp_sol = pomdp_prob.solve();
-% path = pomdp_prob.simulate(pomdp_sol,b0_sim,sim_time);
-% pomdp_prob.plot_sol(path);
+% pomdp larks
+if pomdp
+    pomdp_prob = pomdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,'solver','larks');
+    pomdp_sol = pomdp_prob.solve();
+    path = pomdp_prob.simulate(pomdp_sol,b0_sim,sim_time);
+    pomdp_prob.plot_sol(path,sim_time);
+end

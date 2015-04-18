@@ -3,7 +3,7 @@ close all
 clc
 
 n = 2;
-H = [5,10,15];  % solver horizon
+H = [5,10,15,25,40];  % solver horizon
 
 % result vectors
 run_time = zeros(5,1:length(H));
@@ -15,23 +15,13 @@ for i=1:length(H)
   % get actions and compute reward, transition, and observation functions
   inp = setupComplexity(n);
 
-  % mdp
-  mdp_prob = mdpProblem(n,inp.T,inp.R,inp.A);
-  tic
-  mdp_sol = mdp_prob.solve();
-  run_time(1,i) = toc;
-
-  % qmdp
-  qmdp_prob = qmdpProblem(n,H(i),inp.T,inp.Z,inp.R,inp.A,mdp_sol.V);
-  tic
-  qmdp_prob.solve();
-  run_time(2,i) = toc + run_time(1,n-1);
-
-  % pomdp full
-  pomdp_prob = pomdpProblem(n,H(i),inp.T,inp.Z,inp.R,inp.A,'solver','full');
-  tic
-  pomdp_prob.solve();
-  run_time(3,i) = toc;
+%   if i < 3
+%     % pomdp full
+%     pomdp_prob = pomdpProblem(n,H(i),inp.T,inp.Z,inp.R,inp.A,'solver','full');
+%     tic
+%     pomdp_prob.solve();
+%     run_time(3,i) = toc;
+%   end
 
   % pomdp larks
   pomdp_prob = pomdpProblem(n,H(i),inp.T,inp.Z,inp.R,inp.A,'solver','larks');
@@ -58,32 +48,14 @@ colors = lines(size(run_time,1));
 hold on
 
 % loop over algorithms
-for i=1:5
+for i=4:5
   plot(H,run_time(i,:),'-*','color',colors(i,:),'LineWidth',2)
 end
 
-title('Runtime Vs State Size')
-xlabel('State Size')
+title('Runtime Vs Horizon Steps')
+xlabel('Horizon Steps')
 ylabel('Time [s]')
-legend('MDP','QMDP','POMDP-FULL','POMDP-LARKS','POMDP-PBVI','Location','NorthWest')
-%axis([3,10,0.5,10])
-
-hold off
-
-% plot
-figure
-colors = lines(size(run_time,1));
-hold on
-
-% loop over algorithms
-for i=1:5
-  plot(H,run_time(i,:)/run_time(i,2),'-*','color',colors(i,:),'LineWidth',2)
-end
-
-title('Normalized Runtime Vs. State Size')
-xlabel('State Size')
-ylabel('Normalized Runtime')
-legend('MDP','QMDP','POMDP-FULL','POMDP-LARKS','POMDP-PBVI','Location','NorthWest')
+legend('POMDP-LARKS','POMDP-PBVI','Location','NorthWest')
 %axis([3,10,0.5,10])
 
 hold off
