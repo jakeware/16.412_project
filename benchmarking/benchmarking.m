@@ -3,12 +3,13 @@ close all
 clc
 
 %% Setup
-run_complexity = 1;
+run_n_comp = 1;
+run_h_comp = 0;
 plot_complexity = 1;
 
-%% Space and Time Complexity
-if run_complexity
-  n_max = 3;
+%% Time Complexity
+if run_n_comp
+  n_max = 6;
   H = 6;  % solver horizon
   sim_time = 12;  % simulation steps
 
@@ -17,7 +18,7 @@ if run_complexity
   run_time = zeros(5,1:n_max-1);
 
   % iteratore over grid size
-  for n=2:3
+  for n=2:n_max
     n
     
     % get actions and compute reward, transition, and observation functions
@@ -26,18 +27,15 @@ if run_complexity
     % mdp
     mdp_prob = mdpProblem(n,inp.T,inp.R,inp.A);
     tic
-    mdp_prob.solve();
-    run_time(1,n-1) = toc;
-    
-    % qmdp
-    tic
     mdp_sol = mdp_prob.solve();
-    t1 = toc;
+    run_time(1,n-1) = toc;
+
+    % qmdp
     qmdp_prob = qmdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,mdp_sol.V);
     tic
     qmdp_prob.solve();
-    run_time(2,n-1) = toc + t1;
-    
+    run_time(2,n-1) = toc + run_time(1,n-1);
+
     % pomdp full
     pomdp_prob = pomdpProblem(n,H,inp.T,inp.Z,inp.R,inp.A,'solver','full');
     tic
@@ -62,23 +60,22 @@ if run_complexity
     run_time
   end
   
-  %% Plot
-  if plot_complexity
-      figure
-      colors = lines(size(run_time,1));
-      hold on
-      
-      % loop over algorithms
-      for i=1:5
-        plot(state_size,run_time(i,2:end),'*','color',colors(i,:),'LineWidth',2)
-      end
-      
-      xlabel('State Size')
-      ylabel('Time [s]')
-      legend('MDP','QMDP','POMDP-FULL','POMDP-LARKS','POMDP-PBVI','Location','NorthEast')
-      
-      hold off
+  % plot
+  figure
+  colors = lines(size(run_time,1));
+  hold on
+
+  % loop over algorithms
+  for i=1:5
+    plot(state_size,run_time(i,:)/run_time(i,2),'-*','color',colors(i,:),'LineWidth',2)
   end
+
+  xlabel('State Size')
+  ylabel('Time [s]')
+  legend('MDP','QMDP','POMDP-FULL','POMDP-LARKS','POMDP-PBVI','Location','NorthWest')
+  axis([3,10,0.5,10])
+
+  hold off
 end
 
 %% Obstacles
