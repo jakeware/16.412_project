@@ -1,4 +1,10 @@
+clear all
+close all
+clc
+
 z = 2;
+
+addpath('queue');
 
 load('celltype.mat')
 obs = celltype{1}(:,:,z)==0;
@@ -32,8 +38,11 @@ wind(:,:,2) = velocity.v{1}(:,:,z);
 wind(:,:,3) = velocity.w{1}(:,:,z);
 
 speeds = [-2 -1 0 1 2];
-start = [82 22 0 0]';
+%start = [80 22 0 0]';
+start = [25 10 0 0]';
 goal = [15 75 0 0]';
+% start = [15 75 0 0]';
+% goal = [25 10 0 0]';
 
 figure(75);
 hold on;
@@ -41,11 +50,19 @@ imagesc(obs);
 plot(start(1),start(2),'bo');
 plot(goal(1),goal(2),'ro');
 
+if obs(start(2),start(1)) == 1 || obs(goal(2),goal(1)) == 1
+    error('Start or goal in obstacle region.')
+end
+
 display('running A*...');
 tic;
-[xtraj,gtraj,htraj] = Astar(start,goal,speeds,obs,wind);
+[xtraj,gtraj,htraj,atraj] = Astar(start,goal,speeds,obs,wind);
 toc
 display('done.');
+if xtraj==0
+    display('No trajectory found');
+    return;
+end
 
 figure(75);
 hold on;
@@ -58,8 +75,14 @@ ylim([0 n]);
 axis equal;
 
 figure(76);
+hold on
 plot(vtraj,'b.-');
-ylim([min(speeds) max(speeds)]);
+plot(atraj,'or-');
+title('Air and Ground Speed Vs. Time');
+xlabel('Time [s]')
+ylabel('Velocity [m/s]')
+legend('Vg','Va')
+hold off
 
 figure(77);
 plot(1:numel(gtraj),gtraj,1:numel(htraj),htraj,'*');
