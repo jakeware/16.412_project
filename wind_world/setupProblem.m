@@ -1,86 +1,76 @@
 %% Summary
-% This function takes the grid size and computes the transition, reward,
-% and observation functions for a nxn grid world.  The action set is also defined in this file
-% and must be created or modified by the user.
+% This function computes the transition, reward,
+% and observation functions for some stored data.
 
 %% Inputs
-% n: the grid dimension as a real number.
+% none
 
 %% Outputs
-% A: action set (m x 2)
-% T: transition function (n^2 x m x n^2)
-% R: reward function (n^2 x m x n^2)
-% Z: observation function (n^2 x n^2)
+% T: transition function (N x m x N)
+% R: reward function (N x m x N)
+% Z: observation function (N x num_obs)
 
-function sol = setupProblem(n)
-  % Actions
-  % up, right, down, left, stay
-  A = [
-    -1,0;  % decrement row (up)
-    0,1;  % increment column (right)
-    1,0;  % increment row (down)
-    0,-1;  % decrement column (left)
-    0,0];  % stay
+function R = setupProblem()
 
-  % Transitions(s,a,s')
-  T = zeros(n^2,size(A,1),n^2);
+  % those should be arguments
+  % node locations (x, y)
+  node_list = [
+    30,20;
+    100,100;
+    195,40;
+    195,180;
+    10,180];
+  % graph edges (node index, node index)
+  edge_list = [
+    1,2;
+    1,3;
+    1,5;
+    2,3;
+    2,4;
+    3,2;
+    3,4;
+    5,2;
+    5,4;
+    ];
+  goal = 5;
+  n = 100;
+  uv_mean = [-4, 4]';  % x-vel [m/s]
+  uv_cov = [10, -3; 
+            -3,  5];
+  setup_data = load('batchdata');
+  energy_data = load('energy.mat');
 
-  % loop over rows
-  for i=1:n
-    %i
-    % loop over columns
-    for j=1:n
-      %j
-      % loop over actions
-      for i_a=1:size(A,1)
-        %i_a
-        i_s = sub2ind([n,n],i,j);
-        trans = transition([i,j],A(i_a,:),n);
-
-        %pause
-
-        for t=1:size(trans,1)
-          %t
-          i_sp = sub2ind([n,n],trans(t,1),trans(t,2));
-          T(i_s,i_a,i_sp) = trans(t,3);
-        end
-
-        %pause
-      end
-    end
+  m = size(edge_list,1); % num actions
+  N = size(node_list,1); % num states
+  
+  % windfield probabilities
+  wmargin = [.05 .05]';
+  wp = [];
+  for i=1:setup_data.batchdata.met.ncustom
+    speed = setup_data.batchdata.met.custom(i).speed;
+    direction = setup_data.batchdata.met.custom(i).direction;
+    [u,v] = pol2cart(direction,speed);
+    w = [u v]';
+    wp = [wp,mvncdf(w-wmargin,w+wmargin,uv_mean,uv_cov)];
   end
-
-  % Rewards(s,a,s')
-  R = zeros(n^2,size(A,1),n^2);
-
-  % loop over rows
-  for i=1:n
-    % loop over columns
-    for j=1:n
-      % loop over actions
-      for i_a=1:size(A,1)
-        i_s = sub2ind([n,n],i,j);
-
-        sp = [i,j] + A(i_a,:);
-        if sp(1) >= 1 && sp(1) <= n && sp(2) >= 1 && sp(2) <= n
-          i_sp = sub2ind([n,n],sp(1),sp(2));
-          R(i_s,i_a,i_sp) = 1;
-        end
-
-        %pause
-      end
-    end
+  
+  % Transition
+  
+  % Reward
+  % negative reward for the expected energy
+  R2d = repmat(-energy_data.energy'*wp',1,N);
+  % positive reward for getting to the goal
+  R2d(:,goal) = R2d(:,goal)+10*max(max(abs(R2d)));
+  R = zeros(N,m,N);
+  for i=1:N
+    R(i,:,:) = R2d;
   end
-
-  R(:,:,n^2) = 10*R(:,:,n^2);
-
-  % Observations(s',o')
-  Z = diag(ones(n^2,1)) + ones(n^2);
-  Z = normr(Z);
+  
+  % Z from Naomi
 
   % return values
-  sol.A = A;
-  sol.T = T;
-  sol.R = R;
-  sol.Z = Z;
-return
+  %sol.A = A;
+  %sol.T = T;
+  %sol.R = R;
+  %sol.Z = Z;
+end
