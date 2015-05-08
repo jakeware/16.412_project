@@ -1,30 +1,26 @@
 classdef pomdpProblem
   properties
     gamma = .9;  % dicount factor
-    m;
-    n;  % gris size
-    N;  % state size
+    N;  % number of states
+    M;  % number of actions
     H;  % horizon
     T;  % transition probs (N x m x N)
-    Z;  % observation probs (N x m x N)
-    R;  % reward values (N)
-    A;  % action set
+    Z;  % observation probs (N x num_obs)
+    R;  % reward values (m x N)
     B;  % belief set if using PBVI
     sol;  % solver type (1=full,2=larks,3=pbvi)
     ns;  % number of belief samples for PBVI
   end
   
   methods
-    function obj = pomdpProblem(n,H,T,Z,R,A,varargin)
+    function obj = pomdpProblem(N,M,H,T,Z,R,varargin)
       % if b0 is provided, will use point-based value iteration
-      obj.n = n;
-      obj.N = n^2;
+      obj.N = N;
+      obj.M = M;
       obj.H = H;
       obj.T = T;
       obj.Z = Z;
       obj.R = R;
-      obj.m = size(A,1);
-      obj.A = A;
       obj.B = [];
       obj.sol = 1;
       obj.ns = 0;
@@ -60,7 +56,7 @@ classdef pomdpProblem
       %  initialize value function
       V = [];
       A = [];
-      for action=1:obj.m
+      for action=1:obj.M
         V = [V,sum(squeeze(obj.R(:,action,:)),2)];
         A = [A,action];
       end
@@ -74,18 +70,18 @@ classdef pomdpProblem
         A = [];
         
         if obj.sol == 3
-          G_pbvi = zeros(obj.N,obj.m,size(obj.B,2));
+          G_pbvi = zeros(obj.N,obj.M,size(obj.B,2));
         end
         
         % loop over actions
-        for action=1:obj.m
-          G_a = zeros(obj.N,size(Vprime,2),obj.N+1);
+        for action=1:obj.M
+          G_a = zeros(obj.N,size(Vprime,2),size(obj.Z,2)+1);
           
           G_a_star = repmat(sum(squeeze(obj.R(:,action,:)),2),1,size(Vprime,2));
           G_a(:,:,1) = G_a_star;
           
           % loop over observations
-          for obs=1:obj.N
+          for obs=1:size(obj.Z,2)
             G_a_o = [];
             
             % loop over alpha vectors
@@ -106,7 +102,7 @@ classdef pomdpProblem
             % using PBVI
             for bi=1:size(obj.B,2)
               alphasumoverobs = size(obj.N,1);
-              for oi=1:obj.N
+              for oi=1:size(obj.Z,2)
                 G_a_o = squeeze(G_a(:,:,oi));
                 [~,maxalphabi] = max(G_a_o'*obj.B(:,bi));
                 maxalpha = G_a_o(:,maxalphabi);
@@ -147,25 +143,17 @@ classdef pomdpProblem
     
     function path = simulate(obj,sol,b0,t)
       path.b = zeros(obj.N,t+1);
-      path.p = zeros(t+1,1);
-      path.Amap = zeros(obj.n,obj.n,2);
-      path.s = zeros(t+1,2);
-      
       path.b(:,1) = b0;
-      [p_s,i_s] = max(b0);
-      [i,j] = ind2sub([obj.n,obj.n],i_s);
-      path.s(1,:) = [i,j];
-      path.p(1) = p_s;
-      i_a = zeros(t,1); t = 12;
+      path.a = zeros(1,t);
       
       for k=1:t
         % get action
-        [vi,ai] = max(sol.V'*path.b(:,k));
-        i_a(k) = sol.A(1,ai);
-        path.a(k,:) = obj.A(i_a(k),:);
+        [~,vmaxi] = max(sol.V'*path.b(:,k));
+        amax = sol.A(1,vmaxi);
+        path.a(k) = amax;
         
         % propogate belief
-        path.b(:,k+1) = squeeze(obj.T(:,i_a(k),:))'*path.b(:,k);
+        path.b(:,k+1) = squeeze(obj.T(:,amax,:))'*path.b(:,k);
         
         % probability of o inter s
         W = obj.Z'*path.b(:,k+1);
@@ -175,43 +163,16 @@ classdef pomdpProblem
         
         path.b(:,k+1) = obj.Z(:,i_z).*path.b(:,k+1);
         path.b(:,k+1) = path.b(:,k+1)/norm(path.b(:,k+1));
-
-        % store MAP state
-        [p_s,i_s] = max(path.b(:,k+1));
-        [i,j] = ind2sub([obj.n,obj.n],i_s);
-        path.s(k+1,:) = [i,j];
-        path.p(k+1) = p_s;
-      end
-      
-      for i=1:t
-        path.Amap(path.s(i,1),path.s(i,2),1:2) = path.a(i,:);
-        path.Pmap(path.s(i,1),path.s(i,2)) = path.p(i,:);
       end
     end
     
-    function plot_sol(obj,path,t)
-%       figure
-%       hold on
-%       colormap('jet')
-%       
-%       % actions
-%       [X,Y] = meshgrid(1:obj.n,1:obj.n);  % possible coordinates
-%       quiver(X - 0.25*path.Amap(:,:,2),Y - 0.25*path.Amap(:,:,1),path.Amap(:,:,2),path.Amap(:,:,1),0.5,'r','LineWidth',2)
-%       
-%       % path
-%       scatter(path.s(:,2),path.s(:,1),100,'k','filled')
-%       
-%       title('QMDP Solution')
-%       xlabel('X')
-%       ylabel('Y')
-%       hold off
-      
+    function plot_sol(obj,path,t)      
       % plot belief state over time
       figure
-      m = ceil(sqrt(size(path.b,2)));
+      m = ceil(sqrt(t));
       for i=1:t
         subplot(m,m,i)
-        imagesc(reshape(path.b(:,i),obj.n,obj.n));
+        imagesc(path.b(:,i));
       end
     end
   end
