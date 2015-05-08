@@ -5,7 +5,7 @@ clc
 %% Environment Setup
 n = 4;  % grid size (for nxn grid)
 H = 5;  % solver horizon
-sim_time = 15;  % simulation steps
+sim_time = 8;  % simulation steps
 
 % get actions and compute reward, transition, and observation functions
 inp = setupProblem(n);
