@@ -10,36 +10,7 @@
 % R: reward function (N x m x N)
 % Z: observation function (N x num_obs)
 
-function [T,R] = setupProblem()
-
-  % those should be arguments
-  % node locations (x, y)
-  node_list = [
-    30,20;
-    100,100;
-    195,40;
-    195,180;
-    10,180];
-  % graph edges (node index, node index)
-  edge_list = [
-    1,2;
-    1,3;
-    1,5;
-    2,3;
-    2,4;
-    3,2;
-    3,4;
-    5,2;
-    5,4;
-    ];
-  goal = 5;
-  n = 100;
-  uv_mean = [-4, 4]';  % x-vel [m/s]
-  uv_cov = [10, -3; 
-            -3,  5];
-  setup_data = load('batchdata');
-  energy_data = load('energy.mat');
-
+function [T,R,Z] = setupProblem(node_list,edge_list,obs,goal,uv_mean,uv_cov,setup_data,energy_data)
   m = size(edge_list,1); % num actions
   N = size(node_list,1); % num states
   
@@ -73,6 +44,7 @@ function [T,R] = setupProblem()
   end
   
   % Z from Naomi
+  createObservationMatrix(node_list,edge_list,obs);
 
   % return values
   %sol.A = A;
