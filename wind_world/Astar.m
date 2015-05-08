@@ -163,7 +163,7 @@ function neighs = get_neighbours(state,n,speeds,obs,wind)
       end
       
       airspeed = get_airspeed(groundspeed,[state(1)+speeds(state(3)) state(2)+speeds(state(4))],wind);  
-      if norm(airspeed)>3
+      if norm(airspeed)>5
        continue;
       end
       

@@ -15,31 +15,52 @@ listing = dir(strcat(data_path,proj_name));
 
 % node locations (x, y)
 node_list = [
-    2,2;
-    25,2;
-    48,2;
-    13,13;
-    13,37;
-    25,25;
-    25,48;
-    2,25;
-    2,48;
-    48,25;
-    48,48;
-    42,37;
-    42,13];
+    2,2;   % 1
+    2,25;  % 2
+    2,48;  % 3
+    13,13; % 4
+    13,37; % 5
+    25,2;  % 6
+    25,25; % 7
+    25,48; % 8
+    42,13; % 9
+    42,37; % 10
+    48,2;  % 11
+    48,25; % 12
+    48,48; % 13
+];
 
 % graph edges (node index, node index)
 edge_list = [
     1,2;
-    1,3;
-    1,5;
+    1,4;
+    1,6;
     2,3;
-    2,4;
-    3,2;
-    3,4;
-    5,2;
-    5,4;
+    2,5;
+    3,5;
+    3,8;
+    4,2;
+    4,5;
+    4,6;
+    4,7;
+    5,3;
+    5,7;
+    5,8;
+    6,7;
+    6,10;
+    6,11;
+    7,8;
+    7,9;
+    7,10;
+    8,9;
+    8,13;
+    9,10;
+    9,12;
+    10,12;
+    11,9;
+    11,12;
+    12,10;
+    12,13;
     ];
 
 % speed list (nodes/step)
@@ -92,11 +113,11 @@ colormap(flipud(colormap('gray')))
 imagesc(obs);
 
 % plot nodes
-scatter(node_list(:,1),node_list(:,2),200,'b','LineWidth',2)
+scatter(node_list(:,1),node_list(:,2),200,'LineWidth',2)
 
 % plot node labels
 labels = cellstr(num2str([1:size(node_list,1)]'));
-text(node_list(:,1),node_list(:,2),labels)
+text(node_list(:,1),node_list(:,2),labels,'horizontalAlignment','center')
 
 % plot edges
 for i=1:length(edge_list)
@@ -105,7 +126,7 @@ for i=1:length(edge_list)
     vx = node_list(edge_list(i,2),1) - nx;
     vy = node_list(edge_list(i,2),2) - ny;
     offset = 2*[vx,vy]/norm([vx,vy]);
-    quiver(nx+offset(1),ny+offset(2),vx,vy,'r','LineWidth',2)
+    %quiver(nx+offset(1),ny+offset(2),vx,vy,'r','LineWidth',2,'MaxHeadSize',0.2)
 end
 
 % plot graph (TODO: Add graph edges)

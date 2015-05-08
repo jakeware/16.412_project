@@ -4,14 +4,14 @@ clc
 
 z = 2;
 
-addpath('queue');
+addpath('../queue');
 
-load('celltype.mat')
+load('../../quic_project_v2_data/celltype.mat')
 obs = celltype{1}(:,:,z)==0;
 n = size(obs,1);
 
 inf_obs = zeros(n);
-rad = 2;
+rad = 1;
 for i=1:n
     for j=1:n
         found = 0;
@@ -32,15 +32,15 @@ for i=1:n
 end
 obs = inf_obs;
 
-load('velocity.mat')
+load('../../quic_project_v2_data/quic_project_v2_samp001/velocity.mat')
 wind(:,:,1) = velocity.u{1}(:,:,z);
 wind(:,:,2) = velocity.v{1}(:,:,z);
 wind(:,:,3) = velocity.w{1}(:,:,z);
 
 speeds = [-2 -1 0 1 2];
 %start = [80 22 0 0]';
-start = [25 10 0 0]';
-goal = [15 75 0 0]';
+start = [25 25 0 0]';
+goal = [48 25 0 0]';
 % start = [15 75 0 0]';
 % goal = [25 10 0 0]';
 
