@@ -1,28 +1,69 @@
-%goodlist = (rand(numstates,1)>0.3)
-clc
+% inputs: celltype map, node_list, edge list
 
 
-goodlist = [1 0 0 1 0 1 1];
-edge_list = [1 2; 1 4; 2 3; 3 4; 3 5; 4 5; 4 6; 6 7];
-numstates = length(goodlist); %length(node_list)
+%% dealing with inputs: replace with function notation later
 
+% input celltype
+map_cell = celltype;
 
-% good edge list: only edges connecting good nodes
-badlist = not(goodlist);
+% node locations (x, y)
+node_list = [
+    30,20;
+    100,100;
+    195,40;
+    195,180;
+    10,180];
+
+% graph edges (node index, node index)
+edge_list = [
+    1,2;
+    1,3;
+    1,5;
+    2,3;
+    2,4;
+    3,2;
+    3,4;
+    5,2;
+    5,4;
+    ];
+
+%% extract goodlist/badlist from map
+
+map = map_cell{1}>0;
+numstates = length(node_list); %length(node_list)
+
+%% find occluded ("badlist") nodes
+% "badlist" nodes are occluded nodes
+
+badlist = zeros(numstates,1);
+for i = 1:size(node_list,1)
+    for k = 3:21
+        type = map(node_list(i,2), node_list(i,1), k);
+        if type == 0
+            badlist(i) = 1;
+            break
+        end
+    end
+end
+
 badlist_nodes = find(badlist == 1);
+
+%% Identify good and bad edges
 
 bad_edges = [];
 good_edges = [];
 for i= 1:size(edge_list,1)
     if any(ismember(badlist_nodes, edge_list(i,:)))
+        % bad edges: edges connecting any node to a bad node
         bad_edges = [bad_edges; edge_list(i,:)];
     else
+        % good edges: only edges connecting good nodes
         good_edges = [good_edges; edge_list(i,:)];
     end
 end
 
 
-%% Given a goodlist, assign probabilities based on neighbors
+%% Given a goodlist, assign observation probabilities based on neighbors
 
 % 3-2-1 ratio of correct-neighbor-other
 
@@ -35,10 +76,10 @@ good_neighbor_rate = 0.2;
 bad_neighbor_rate = 0.2;
 correct_rate = 0.3;
 
+% this double-counts bad edges if they are bi-directional, may want to fix
+
 for i = 1:numstates
-    if goodlist(i) == 1
-        display('node is good')
-        display(i)
+    if badlist(i) == 0
         [I_good,J] = find(good_edges==i);
         [I_bad,J] = find(bad_edges==i);
         
