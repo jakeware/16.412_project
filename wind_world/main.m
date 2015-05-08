@@ -2,27 +2,39 @@ clear all
 close all
 clc
 
+load('batchdata.mat');
+load('energy.mat');
+
+node_list = ...
+edge_list = ...
+obs = ...
+goal = ...
+
+uv_mean = ...
+uv_cov = ...
+
 %% Environment Setup
-n = 4;  % grid size (for nxn grid)
 H = 5;  % solver horizon
 sim_time = 8;  % simulation steps
 
 % get actions and compute reward, transition, and observation functions
-inp = setupProblem(n);
+[T,R,Z] = setupProblem(node_list,edge_list,obs,goal,uv_mean,uv_cov,batchdata,energy);
+
+N = size(node_list,1);
 
 %% Solver Selection
 solve_mdp = 0;  % MDP
 solve_qmdp = 0;  % QMDP
 solve_pomdp = 0;  % POMDP
-solve_pomdp_larks = 0;  % POMDP with larks pruning
-solve_pomdp_pbvi = 1;  % POMDP with PBVI
+solve_pomdp_larks = 1;  % POMDP with larks pruning
+solve_pomdp_pbvi = 0;  % POMDP with PBVI
 
 %% MDP Inputs
-s0 = [1,1];  % initial state for mdp
+s0 = 1;  % initial state for mdp
 
 %% POMDP Inputs
 % initial belief for simulation
-b0_sim_mat = zeros(n);
+b0_sim_mat = zeros();
 b0_sim_mat(1,1) = 1;
 b0_sim = reshape(b0_sim_mat,[n^2,1]);
 

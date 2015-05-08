@@ -1,11 +1,9 @@
-function Z = createObservationMatrix(node_list,edge_list,obs)
+function Z = createObservationMatrix(node_list,edge_list,map)
   %% extract goodlist/badlist from map
-  map = obs;
-  numstates = length(node_list); %length(node_list)
+  numstates = length(node_list);
 
   %% find occluded ("badlist") nodes
   % "badlist" nodes are occluded nodes
-
   badlist = zeros(numstates,1);
   for i = 1:size(node_list,1)
       for k = 3:21
@@ -16,7 +14,6 @@ function Z = createObservationMatrix(node_list,edge_list,obs)
           end
       end
   end
-
   badlist_nodes = find(badlist == 1);
 
   %% Identify good and bad edges
