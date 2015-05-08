@@ -10,7 +10,7 @@
 % R: reward function (N x m x N)
 % Z: observation function (N x num_obs)
 
-function R = setupProblem()
+function [T,R] = setupProblem()
 
   % those should be arguments
   % node locations (x, y)
@@ -55,6 +55,12 @@ function R = setupProblem()
   end
   
   % Transition
+  traj_founds = energy_data.energy>0;
+  traj_probs = traj_founds'*wp';
+  T = zeros(N,m,N);
+  for j=1:m
+    T(edge_list(j,1),j,edge_list(j,2)) = traj_probs(j);
+  end
   
   % Reward
   % negative reward for the expected energy
