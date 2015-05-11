@@ -7,9 +7,12 @@ solve_qmdp = 0;
 solve_pomdp_larks = 1;  % POMDP with larks pruning
 
 %% Load Data
-load('../../quic_project_v3_data/setup/mc/batchdata.mat');
-load('../../quic_project_v3_data/results/energy.mat');
-load('../../quic_project_v3_data/celltype.mat');
+%load('../../quic_project_v3_data/setup/mc/batchdata.mat');
+%load('../../quic_project_v3_data/results/energy.mat');
+%load('../../quic_project_v3_data/celltype.mat');
+load('energy.mat');
+load('celltype.mat');
+load('batchdata.mat');
 
 z = 2;
 obs = celltype{1}(:,:,z)==0;
