@@ -3,25 +3,21 @@ classdef qmdpProblem
     gamma = 0.9;  % dicount factor
     m;  % number of actions
     H;  % horizon
-    n;  % grid size
     N;  % state size
     T;  % transition probs (N x m x N)
     Z;  % observation probs (N x m x N)
     R;  % reward values (N)
-    A;  % action set
     V;  % mdp value function
   end
   
   methods
-    function obj = qmdpProblem(n,H,T,Z,R,A,V)
-      obj.n = n;
-      obj.N = n^2;
+    function obj = qmdpProblem(H,T,Z,R,V)
+      obj.N = size(T,1);
       obj.H = H;
       obj.T = T;
       obj.Z = Z;
       obj.R = R;
-      obj.m = size(A,1);
-      obj.A = A;
+      obj.m = size(T,2);
       obj.V = V;
     end
     
@@ -40,47 +36,28 @@ classdef qmdpProblem
       sol.Q = Q;
     end
     
-    function path = simulate(obj,sol,b0,ns)
-      path.b = zeros(obj.N,obj.H+1);
-      path.p = zeros(obj.H+1,1);
-      path.Amap = zeros(obj.n,obj.n,2);
-      path.s = zeros(obj.H+1,2);
-      
+    function path = simulate(obj,sol,b0,t)
+      path.b = zeros(obj.N,t+1);
       path.b(:,1) = b0;
-      [p_s,i_s] = max(b0);
-      [i,j] = ind2sub([obj.n,obj.n],i_s);
-      path.s(1,:) = [i,j];
-      path.p(1) = p_s;
-      i_a = zeros(obj.H,1);
+      path.a = zeros(1,t);
       
-      for k=1:ns
+      for k=1:t
         % get action
-        [vi,ai] = max(sol.Q'*path.b(:,k));
-        i_a(k) = ai;
-        path.a(k,:) = obj.A(ai,:);
+        [~,vmaxi] = max(sol.Q'*path.b(:,k));
+        amax = sol.A(1,vmaxi);
+        path.a(k) = amax;
         
         % propogate belief
-        path.b(:,k+1) = squeeze(obj.T(:,i_a(k),:))'*path.b(:,k);
+        path.b(:,k+1) = squeeze(obj.T(:,amax,:))'*path.b(:,k);
         
         % probability of o inter s
         W = obj.Z'*path.b(:,k+1);
-
+                
         % get observation
         i_z = randsample(1:length(W),1,true,W);
         
         path.b(:,k+1) = obj.Z(:,i_z).*path.b(:,k+1);
         path.b(:,k+1) = path.b(:,k+1)/norm(path.b(:,k+1));
-        
-        % store MAP state
-        [p_s,i_s] = max(path.b(:,k+1));
-        [i,j] = ind2sub([obj.n,obj.n],i_s);
-        path.s(k+1,:) = [i,j];
-        path.p(k+1) = p_s;
-      end
-      
-      for i=1:obj.H
-        path.Amap(path.s(i,1),path.s(i,2),1:2) = path.a(i,:);
-        path.Pmap(path.s(i,1),path.s(i,2)) = path.p(i,:);
       end
     end
 
