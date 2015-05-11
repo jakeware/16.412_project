@@ -1,4 +1,4 @@
-function Z = createObservationMatrix(node_list,edge_list,map)
+function Z = createObservationMatrix(node_list,edge_list,z,map)
   %% extract goodlist/badlist from map
   numstates = length(node_list);
 
@@ -6,7 +6,7 @@ function Z = createObservationMatrix(node_list,edge_list,map)
   % "badlist" nodes are occluded nodes
   badlist = zeros(numstates,1);
   for i = 1:size(node_list,1)
-      for k = 3:21
+      for k = z+1:21
           type = map(node_list(i,2), node_list(i,1), k);
           if type == 0
               badlist(i) = 1;
@@ -39,8 +39,8 @@ function Z = createObservationMatrix(node_list,edge_list,map)
   % ignoring that and just scaling to sum to 1 at end
   other_rate = 0.1;
   good_neighbor_rate = 0.2;
-  bad_neighbor_rate = 0.2;
-  correct_rate = 0.3;
+  bad_neighbor_rate = 0.1;
+  correct_rate = 8;
 
   % this double-counts bad edges if they are bi-directional, may want to fix
 
