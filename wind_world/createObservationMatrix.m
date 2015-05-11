@@ -31,16 +31,21 @@ function Z = createObservationMatrix(node_list,edge_list,z,map)
 
 
   %% Given a goodlist, assign observation probabilities based on neighbors
-  % 3-2-1 ratio of correct-neighbor-other
+  % specify ratio of correct-neighbor-other
 
   Z = zeros(numstates);
 
-  % these need to be functions of how many there are
-  % ignoring that and just scaling to sum to 1 at end
+  % for non-occluded nodes
+  % these are weights, not probabilities, scaling to sum to 1 at end
   other_rate = 0.1;
   good_neighbor_rate = 0.2;
   bad_neighbor_rate = 0.1;
   correct_rate = 8;
+  
+  % for occluded nodes
+  % split non_occluded_total_fraction uniformly among non-occluded nodes
+  % assign 1 - non_occluded_total_fraction to "no-signal"
+  non_occluded_total_fraction = 0.3;  % fraction to be split uniformly between non-occluded observations
 
   % this double-counts bad edges if they are bi-directional, may want to fix
 
@@ -58,7 +63,8 @@ function Z = createObservationMatrix(node_list,edge_list,z,map)
 
           Z(i,i) = correct_rate;
       else
-          Z(i,numstates+1) = 1;
+          Z(i,:) = non_occluded_total_fraction/(numstates-length(badlist_nodes));
+          Z(i,numstates+1) = 1-non_occluded_total_fraction;
       end
   end
 
@@ -68,6 +74,12 @@ function Z = createObservationMatrix(node_list,edge_list,z,map)
   for i = 1:numstates
       Z(i,:) = Z(i,:)/Y(i);
   end
+  
+  % final format of returned Z:
+  % each row corresponds to a state.
+  % each column corresponds to a non-occluded node (in order, occluded
+  % nodes removed).  The final column corresponds to "no-signal"
+  % observation.  Final size is numstates x (num non_occluded states +1)
 
 end
   
