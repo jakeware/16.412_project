@@ -8,8 +8,8 @@ clc
 %proj_name = 'quic_project_v1_samp*';
 
 % 50x50 map
-data_path = '../../quic_project_v2_data/';
-proj_name = 'quic_project_v2_samp*';
+data_path = '../../quic_project_v3_data/';
+proj_name = 'quic_project_v3_samp*';
 
 listing = dir(strcat(data_path,proj_name));
 
@@ -18,15 +18,15 @@ node_list = [
     2,2;   % 1
     2,25;  % 2
     2,48;  % 3
-    13,13; % 4
+    13,19; % 4
     13,37; % 5
     25,2;  % 6
-    25,25; % 7
+    25,22; % 7
     25,48; % 8
     42,13; % 9
     42,37; % 10
     48,2;  % 11
-    48,25; % 12
+    48,23; % 12
     48,48; % 13
 ];
 
@@ -35,32 +35,58 @@ edge_list = [
     1,2;
     1,4;
     1,6;
+    2,1;
     2,3;
     2,5;
+    2,4;
+    2,7;
+    3,2;
     3,5;
     3,8;
+    4,1;
     4,2;
     4,5;
     4,6;
     4,7;
+    5,2;
     5,3;
+    5,4;
     5,7;
     5,8;
+    6,1;
+    6,4;
     6,7;
-    6,10;
+    6,9;
     6,11;
+    7,4;
+    7,5;
+    7,6;
     7,8;
     7,9;
     7,10;
-    8,9;
+    7,12;
+    7,13;
+    8,3;
+    8,5;
+    8,7;
+    8,10;
     8,13;
+    9,6;
+    9,7;
     9,10;
+    9,11;
     9,12;
+    10,7;
+    10,8;
+    10,9;
     10,12;
+    10,13;
+    11,6;
     11,9;
     11,12;
+    12,7;
+    12,9;
     12,10;
-    12,13;
     ];
 
 % speed list (nodes/step)
@@ -83,7 +109,7 @@ n = size(obs,1);
 
 %% Inflate Obstacles
 inf_obs = zeros(n);
-rad = 1;
+rad = 2;
 for i=1:n
     for j=1:n
         found = 0;
@@ -133,6 +159,7 @@ end
 xlim([0 size(obs,1)]);
 ylim([0 size(obs,1)]);
 axis equal;
+title('Inflated Obstacle Region and Node Locations')
 xlabel('X')
 ylabel('Y')
 hold off
