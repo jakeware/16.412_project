@@ -13,10 +13,10 @@ classdef pomdpProblem
   end
   
   methods
-    function obj = pomdpProblem(N,M,H,T,Z,R,varargin)
+    function obj = pomdpProblem(H,T,Z,R,varargin)
       % if b0 is provided, will use point-based value iteration
-      obj.N = N;
-      obj.M = M;
+      obj.N = size(T,1);
+      obj.M = size(T,2);
       obj.H = H;
       obj.T = T;
       obj.Z = Z;
@@ -157,7 +157,7 @@ classdef pomdpProblem
         
         % probability of o inter s
         W = obj.Z'*path.b(:,k+1);
-        
+                
         % get observation
         i_z = randsample(1:length(W),1,true,W);
         
@@ -166,14 +166,36 @@ classdef pomdpProblem
       end
     end
     
-    function plot_sol(obj,path,t)      
-      % plot belief state over time
-      figure
-      m = ceil(sqrt(t));
+    function plot_sol(obj,path,t,node_list,obs)            
       for i=1:t
-        subplot(m,m,i)
-        imagesc(path.b(:,i));
+        % plot belief state over time
+        figure
+        colormap('jet')
+        hold on
+
+        % obstacle region
+        [X,Y] = meshgrid(1:size(obs,1),1:size(obs,2));
+        scatter(reshape(X(obs==1),1,[]),reshape(Y(obs==1),1,[]),200,'ks','filled');
+        
+        % plot nodes
+        scatter(node_list(:,1),node_list(:,2),300,path.b(1:end-1,i),'filled')
+
+        % plot node labels
+        labels = cellstr(num2str([1:size(node_list,1)]'));
+        text(node_list(:,1),node_list(:,2),labels,'horizontalAlignment','center','color','w')
+        
+        % failure state
+        %scatter(8,42,800,path.b(end,i),'s','filled');
+        rectangle('Position',[1,40.25,14,3],'EdgeColor','k','LineWidth',2);
+        text(8,42,strcat({'Failure: '},sprintf('%2.2f',100*path.b(end,i)),'%'),'horizontalAlignment','center');
+        hold off
+        
+        F(i) = getframe;
       end
+      close all
+      
+      movie(F,3,1)
+      movie2avi(F,'pomdp_test1.avi','fps',1)
     end
   end
 end
