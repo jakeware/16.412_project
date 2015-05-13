@@ -2,10 +2,6 @@ clear all
 close all
 clc
 
-%% Setup
-solve_qmdp = 0;
-solve_pomdp_larks = 1;  % POMDP with larks pruning
-
 %% Load Data
 load('../../quic_project_v3_data/setup/mc/batchdata.mat');
 load('../../quic_project_v3_data/results/energy.mat');
@@ -131,29 +127,12 @@ sim_time = 8;  % simulation steps
 % get actions and compute reward, transition, and observation functions
 [T,R,Z] = setupProblem(node_list,edge_list,goal,uv_mean,uv_cov,batchdata,energy,z,map);
 
-%% MDP Inputs
-s0 = 1;  % initial state for mdp
-
-%% POMDP Inputs
 % initial belief for simulation
 b0_sim_mat = zeros(size(T,1),1);
 b0_sim_mat(1,1) = 1;
 
 %% Execution
-% mdp or qmdp
-if solve_qmdp
-  mdp_prob = mdpProblem(T,R);
-  mdp_sol = mdp_prob.solve();
-  qmdp_prob = qmdpProblem(H,T,Z,R,mdp_sol.V);
-  qmdp_sol = qmdp_prob.solve();
-  %path = qmdp_prob.simulate(qmdp_sol,b0_sim_mat,sim_time);
-  %qmdp_prob.plot_sol(path);
-end
-
-% solve pomdp with larks
-if solve_pomdp_larks
-  pomdp_prob = pomdpProblem(H,T,Z,R,'solver','larks');
-  pomdp_sol = pomdp_prob.solve();
-  path = pomdp_prob.simulate(pomdp_sol,b0_sim_mat,sim_time);
-  pomdp_prob.plot_sol(path,sim_time,node_list,obs);
-end
+pomdp_prob = pomdpProblem(H,T,Z,R,'solver','larks');
+pomdp_sol = pomdp_prob.solve();
+path = pomdp_prob.simulate(pomdp_sol,b0_sim_mat,sim_time);
+pomdp_prob.plot_sol(path,sim_time,node_list,obs);

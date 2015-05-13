@@ -30,7 +30,7 @@ function [T,R,Z] = setupProblem(node_list,edge_list,goal,uv_mean,uv_cov,batchdat
   traj_probs = traj_founds'*wp';
   T = zeros(N,m,N);
   for j=1:m
-    T(edge_list(j,1),j,edge_list(j,2)) = .8*traj_probs(j);
+    T(edge_list(j,1),j,edge_list(j,2)) = traj_probs(j);
   end
   
   % add loop at goal node
@@ -61,6 +61,7 @@ function [T,R,Z] = setupProblem(node_list,edge_list,goal,uv_mean,uv_cov,batchdat
   R = zeros(N,m,N);
   for i=1:N
     for j=1:m
+      % check if this action corresponds to state i
       if edge_list(j,1) == i
         R(i,j,edge_list(j,2)) = -exp_energy(j);
       end
@@ -68,20 +69,21 @@ function [T,R,Z] = setupProblem(node_list,edge_list,goal,uv_mean,uv_cov,batchdat
   end
   
   % positive reward for getting to the goal
+  Rmax = max(max(max(abs(R))));
   for i=1:N
     for j=1:m
       if R(i,j,goal) ~= 0
-        R(i,j,goal) = R(i,j,goal)+100*max(max(max(abs(R))));
+        R(i,j,goal) = R(i,j,goal)+10*Rmax;
       end
     end
   end
   
   % add reward for goal loop
-  R(goal,end+1,goal) = 1000;
+  R(goal,end+1,goal) = 10*Rmax;
   
   % add reward for failure state
-  R(:,:,end+1) = -1000;
-  R(end+1,:,:) = -1000;
+  R(:,:,end+1) = -10*Rmax;
+  R(end+1,:,:) = -10*Rmax;
   
   % Z from Naomi
   Z = createObservationMatrix(node_list,edge_list,z,map);
